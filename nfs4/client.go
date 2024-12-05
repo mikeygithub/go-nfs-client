@@ -7,7 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	. "github.com/Cyberax/go-nfs-client/internal"
+	. "github.com/mikeygithub/go-nfs-client/internal"
 	"io"
 	"math"
 	"net"
@@ -406,12 +406,12 @@ func (c *NfsClient) GetFileList(path string) ([]FileInfo, error) {
 	dirFh := res[len(res)-2].Opgetfh().Resok4().Object
 
 	curDirList := res[len(res)-1].Opreaddir().Resok4()
-	for ; ; {
+	for {
 		ent := curDirList.Reply.Entries
 		if ent == nil {
 			break
 		}
-		for ; ; {
+		for {
 			fileList = append(fileList, c.translateFileMeta(string(ent.Name), ent.Attrs))
 			if ent.Nextentry == nil {
 				break
@@ -551,7 +551,7 @@ func (c *NfsClient) ReadFile(path string, offset, count uint64, writer io.Writer
 	fileFh := res[len(res)-2].Opgetfh().Resok4().Object
 
 	var dataRead uint64
-	for ; ; {
+	for {
 		_, err := writer.Write(flDataBlock.Data)
 		if err != nil {
 			return 0, err
@@ -712,7 +712,7 @@ func (c *NfsClient) WriteFile(path string, truncate bool, offset uint64,
 	}()
 
 	block := make([]byte, NfsReadBlockLen)
-	for ; ; {
+	for {
 		var curRead int
 		curRead, err = reader.Read(block)
 		if curRead == 0 || err == io.EOF {
@@ -735,7 +735,7 @@ func (c *NfsClient) WriteFile(path string, truncate bool, offset uint64,
 }
 
 func (c *NfsClient) writeBlock(id Stateid4, fh Nfs_fh4, offset uint64, data []byte, path string) error {
-	for ; len(data) > 0; {
+	for len(data) > 0 {
 		res, err := c.runNfsTransaction([]Nfs_argop4{
 			{
 				Argop: OP_PUTFH,
